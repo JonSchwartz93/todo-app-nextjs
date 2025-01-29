@@ -1,5 +1,6 @@
 To-Dos:
-- Update app to be more grocery-list specific
+- Clean up code + extract functions/components
+- Update app to be more grocery-list specific :egg: :poultry_leg: :bread: :green_apple: :lemon:
 - Connect OpenAI [text-generation API](https://platform.openai.com/docs/guides/text-generation)
 - Add button to send list of grocery items to OpenAI --> return recipe
 - Update styles + mobile-friendliness
