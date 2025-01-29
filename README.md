@@ -1,3 +1,9 @@
+To-Dos:
+- Update app to be more grocery-list specific
+- Connect OpenAI [text-generation API](https://platform.openai.com/docs/guides/text-generation)
+- Add button to send list of grocery items to OpenAI --> return recipe
+- Update styles + mobile-friendliness
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
