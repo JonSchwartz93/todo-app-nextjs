@@ -5,6 +5,9 @@ To-Dos:
 - Add button to send list of grocery items to OpenAI --> return recipe
 - Update styles + mobile-friendliness
 
+<img width="500" alt="Screenshot 2025-01-29 at 5 35 21 PM" src="https://github.com/user-attachments/assets/07fa71d0-f89a-493f-bc93-ead232ac56bc" />
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
