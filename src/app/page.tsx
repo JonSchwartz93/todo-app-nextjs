@@ -3,45 +3,49 @@ import { useState, useEffect } from "react";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdOutlineEdit } from "react-icons/md";
 
-interface todo {
+interface ingredient {
   id: number;
   name: string;
   completed: boolean;
 }
 
 export default function Home() {
-  const [todos, setTodos] = useState<todo[]>([]);
-  const [todoName, setTodoName] = useState<string>("");
-  const [error, setError] = useState("");
+  const [ingredients, setIngredients] = useState<ingredient[]>([]);
+  const [ingredientName, setIngredientName] = useState<string>("");
+  const [userError, setUserError] = useState("");
+
+  const [aiResponse, setAIResponse] = useState<string>("");
+  const [fetching, setIsFetching] = useState<boolean>(false);
+  // const [apiError, setApiError] = useState<string>("");
 
   useEffect(() => {
-    const todos = localStorage.getItem("todos");
-    if (todos) {
-      setTodos(JSON.parse(todos));
+    const ingredients = localStorage.getItem("ingredients");
+    if (ingredients) {
+      setIngredients(JSON.parse(ingredients));
     }
   }, []);
 
-  const addTodo = () => {
-    if (!todoName.length) {
-      return setError("Please add a todo");
+  const addIngredient = () => {
+    if (!ingredientName.length) {
+      return setUserError("Please add a ingredient");
     };
 
-    const newTodo = {
+    const newIngredient = {
       id: Math.random(),
-      name: todoName,
+      name: ingredientName,
       completed: false
     };
     
-    setTodos([...todos, newTodo]);
-    localStorage.setItem("todos", JSON.stringify([...todos, newTodo]));
-    setError("")
-    setTodoName("");
+    setIngredients([...ingredients, newIngredient]);
+    localStorage.setItem("ingredients", JSON.stringify([...ingredients, newIngredient]));
+    setUserError("")
+    setIngredientName("");
   };
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
-        addTodo();
+        addIngredient();
       }
     };
   
@@ -50,68 +54,107 @@ export default function Home() {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [todoName, todos]);
+  }, [ingredientName, ingredients]);
 
-  const deleteTodo = (id: number) => {
-    const updatedTodos = todos.filter(todo => todo.id !== id);
-    setTodos([...updatedTodos]);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+  const deleteIngredient = (id: number) => {
+    const updatedIngredients = ingredients.filter(ingredient => ingredient.id !== id);
+    setIngredients([...updatedIngredients]);
+    localStorage.setItem("ingredients", JSON.stringify(updatedIngredients));
   };
 
-  const updateTodoStatus = (id: number) => {
-    const updatedTodos = todos.map(todo => {
-      if (todo.id === id) {
+  const updateIngredientStatus = (id: number) => {
+    const updatedIngredients = ingredients.map(ingredient => {
+      if (ingredient.id === id) {
         return {
-          ...todo,
-          completed: !todo.completed
+          ...ingredient,
+          completed: !ingredient.completed
         }
       }
-      return todo;
+      return ingredient;
     })
-    setTodos([...updatedTodos]);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    setIngredients([...updatedIngredients]);
+    localStorage.setItem("ingredients", JSON.stringify(updatedIngredients));
   }
  
+  const handleGenerateAiRecipe = async () => {
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ingredients: ingredients.map(ingredient => ingredient.name).join(", "),
+      }),
+    }
+
+    try {
+      setIsFetching(true)
+      const response = await fetch('http://localhost:3000/api/openai', options);
+      const data =  await response.json();
+      setAIResponse(data.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsFetching(false)
+    }
+  }
+
   return (
-    <div className="m-auto w-1/2 pt-4 text-4xl">
-      <div className="flex items-start mb-4">
-        <div className="flex flex-col mr-4">
-          <input
-            className="mr-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            type="text"
-            placeholder="Add Your Todo Here"
-            value={todoName}
-            onChange={((e) => setTodoName(e.target.value))}
-          />
-          {<p className="text-red-500 text-sm italic">{error}</p>}
-        </div>
-        <button
-          onClick={addTodo}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Add
-        </button>
-      </div>
-      <div className="flex flex-col">
-        {todos.map((todo) => (
-          <div className="flex items-center" key={todo.id}>
+    <div className="flex mt-4 mx-4">
+      <div className="w-1/3 text-2xl mr-4">
+        <div className="flex justify-between mb-4">
+          <div className="flex flex-col">
             <input
-              type="checkbox"
-              onChange={() => {updateTodoStatus(todo.id)}}
-              checked={todo.completed}
-              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2"
+              className={`mr-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${ingredientName.length ? 'normal' : 'italic'}`}
+              type="text"
+              placeholder="Add Ingredients"
+              value={ingredientName}
+              onChange={((e) => setIngredientName(e.target.value))}
             />
-            <p className={todo.completed ? 'text-decoration-line: line-through mr-2' : 'mr-2'}>
-              {todo.name}
-            </p>
-            <button className="mr-2" onClick={() => deleteTodo(todo.id)}>
-              <FaRegTrashCan size={20} />
-            </button>
-            {/* <button className="mr-2" onClick={() => deleteTodo(todo.id)}>
-              <MdOutlineEdit size={20} />
-            </button> */}
+            {<p className="text-red-500 text-sm italic">{userError}</p>}
           </div>
-        ))}
+          <button
+            onClick={addIngredient}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Add
+          </button>
+        </div>
+        <div className="flex flex-col">
+          {ingredients.map((ingredient) => (
+            <div className="flex items-center" key={ingredient.id}>
+              <input
+                type="checkbox"
+                onChange={() => {updateIngredientStatus(ingredient.id)}}
+                checked={ingredient.completed}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2"
+              />
+              <p className={`capitalize mr-2 ${ingredient.completed && 'text-decoration-line: line-through'}`}>
+                {ingredient.name}
+              </p>
+              <button className="mr-2" onClick={() => deleteIngredient(ingredient.id)}>
+                <FaRegTrashCan size={20} />
+              </button>
+              {/* <button className="mr-2" onClick={() => deleteIngredient(ingredient.id)}>
+                <MdOutlineEdit size={20} />
+              </button> */}
+            </div>
+          ))}
+        </div>
+        <div>
+          <button
+            className={ingredients.length < 5 ? "bg-gray-300 px-4 py-2 rounded-md cursor-not-allowed opacity-50" : "bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"}
+            disabled={ingredients.length < 5}
+            onClick={() => handleGenerateAiRecipe()}
+          >
+            {fetching ? 'Loading your recipe...' : 'What can I cook?'}
+            {ingredients.length < 5 && <p className="text-red-500 text-sm italic">Add at least 5 ingredients before requesting a recipe</p>}
+          </button>
+        </div>
+      </div>
+      <div className="w-2/3 text-2xl">
+          {aiResponse && <p>{aiResponse}</p>}
+          {/* {apiError && <p>Something went wrong. Please try again.</p>} */}
       </div>
     </div>
   );
